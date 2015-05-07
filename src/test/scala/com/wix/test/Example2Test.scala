@@ -12,10 +12,9 @@ class Example2Test extends SpecificationWithJUnit with Mockito {
   val Pong = "pong"
   
   trait CallableForTest {
-    def ping: Future[String]
+    def ping: String
+    def sample: Future[String]
   }
-
-
 
   trait ctx extends Scope with ExecutionEnvSupport {
 
@@ -23,30 +22,35 @@ class Example2Test extends SpecificationWithJUnit with Mockito {
 
     val unitUnderTest = new {
 
-      def triggerSomething: Future[String] = callable.ping
-      def triggerSomethingElse() {
+      def triggerSomething() {
         Future {
           Thread.sleep(50)
-          triggerSomething
+          callable.ping
         }
       }
+
+      def triggerSomethingElse: Future[String] = callable.sample
     }
 
 
-    def givenCallablePonging() {
-      callable.ping returns Future.successful( Pong )
-    }
   }
 
 
   "Example2" should {
 
     "test another async code" in new ctx {
-      unitUnderTest.triggerSomethingElse()
+
+      unitUnderTest.triggerSomething()
 
       got {
         one(callable).ping
       }
+    }
+
+    "testing sample" in new ctx {
+      callable.sample returns Future("something") thenReturns Future(Pong)
+
+      unitUnderTest.triggerSomethingElse must beTypedEqualTo(Pong).await
     }
   }
 }
