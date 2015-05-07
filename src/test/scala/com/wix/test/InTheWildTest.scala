@@ -43,7 +43,7 @@ class InTheWildTest extends SpecificationWithJUnit {
         fileServer.getFiles(2, "file.*")
       }
 
-      Future.successful {
+      Future {
         fileServer.storeFile("folder1", "content")
         Thread.sleep(100)
         fileServer.storeFile("file1", "content")
@@ -52,6 +52,7 @@ class InTheWildTest extends SpecificationWithJUnit {
         Thread.sleep(100)
         fileServer.storeFile("file2", "content")
       }
+
 
       Await.result(futureFileNames, atMost = 5.seconds) must containAllOf(Seq("file1", "file2"))
     }
